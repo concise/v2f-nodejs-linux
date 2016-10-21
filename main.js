@@ -4,7 +4,7 @@ const V2FPATH =
     process.env.HOME + '/.v2f';
 
 const u2fCoreFactory = require('./u2fcore');
-const u2fCore = u2fCoreFactory('randfile');
+const u2fCore = u2fCoreFactory(V2FPATH);
 
 const rawMessageProcessorFactory = require('./u2fraw');
 const rawMessageProcessor = rawMessageProcessorFactory(u2fCore);
