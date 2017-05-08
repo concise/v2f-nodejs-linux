@@ -60,7 +60,10 @@ const rawMessageProcessorFactory = function (u2fCore) {
             waitUserApproval((approved) => {
                 if (approved) {
                     console.log('Generating a new key pair for registration... DONE');
-                    console.log('Please go back to your browser window in 3 seconds');
+                    console.log();
+                    console.log('Please go back to your browser window in 3 seconds!!!!!!!');
+                    console.log('Otherwise Google Chrome will not accept this registration');
+                    console.log();
                     setTimeout(()=>{
                         const sig = u2fCore.sign(ap, kh, msg);
                         respHandler(Buffer.concat([
@@ -72,7 +75,7 @@ const rawMessageProcessorFactory = function (u2fCore) {
                             sig,
                             Buffer.from([0x90, 0x00])
                         ]));
-                    }, 3000);
+                    }, 4000);
                 } else {
                     respHandler(null, true);
                     console.log('Generating a new key pair for registration... TIMEOUT!!');

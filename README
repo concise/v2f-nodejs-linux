@@ -37,9 +37,13 @@ Launch Google Chrome and test U2F
 
 ------------------------------------------------------------------------------
 
-When you want to "insert" the security key
+When you want to "insert" the security key into your computer
 
     node main.js
+
+When you want to "eject" the security key from your computer
+
+    just send SIGINT (^C) or SIGTERM to stop the program
 
 When you want to "press" the button
 
