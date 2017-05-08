@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const V2FPATH =
     process.env.V2FPATH ? process.env.V2FPATH :
     process.argv.length > 2 ? process.argv[2] :

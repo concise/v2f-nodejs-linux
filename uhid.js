@@ -33,7 +33,11 @@ const uhidEventLoopFactory = function (outputReportProcessor) {
 
     const cb = function (err, bytesRead, buffer) {
         assert(!err && bytesRead === 4380);
+        if (buffer.readUInt32LE(0) === 5) {
+            console.log('>>>>>>> receive UHID CLOSE event from kernel');
+        }
         if (buffer.readUInt32LE(0) === 6) {
+            console.log('>>>>>>> receive UHID OUTPUT event from kernel');
             processOutputEventFromKernel(buffer);
         }
         loop();
@@ -42,7 +46,10 @@ const uhidEventLoopFactory = function (outputReportProcessor) {
     const processOutputEventFromKernel = function (EV_OUTPUT) {
         const size = EV_OUTPUT.readUInt16LE(4 + 4096);
         const outputReport = EV_OUTPUT.slice(4 + 1, 4 + size);
-        const inputReports = outputReportProcessor(outputReport);
+        outputReportProcessor(outputReport, sendInputReportsToKernel);
+    };
+
+    const sendInputReportsToKernel = function (inputReports) {
         for (let inputReport of inputReports) {
             sendInputReportToKernel(inputReport);
         }

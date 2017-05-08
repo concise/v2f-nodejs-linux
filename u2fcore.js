@@ -1,7 +1,6 @@
 const assert = require('assert');
 const crypto = require('crypto');
 const fs = require('fs');
-const readline = require('readline');
 const u2fcrypto = require('./u2fcrypto');
 
 const u2fCoreFactory = function (V2FPATH) {

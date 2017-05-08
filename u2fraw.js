@@ -1,3 +1,8 @@
+const BUTTON_ADDR = '127.0.0.1';
+const BUTTON_PORT = 7890;
+const BUTTON_URL = `http://${BUTTON_ADDR}:${BUTTON_PORT}/`;
+
+const button = require('./button')(BUTTON_ADDR, BUTTON_PORT);
 const u2fcrypto = require('./u2fcrypto');
 
 const U2F_REGISTER                  = 0x01;
@@ -8,9 +13,24 @@ const SW_CONDITIONS_NOT_SATISFIED   = 0x6985;
 const SW_WRONG_DATA                 = 0x6984;
 const SW_INS_NOT_SUPPORTED          = 0x6d00;
 
+const waitUserApproval = (userApprovalCallback) => {
+    console.log();
+    console.log(`To approve the U2F request please GET the URL:\n\n\t${BUTTON_URL}`);
+    console.log();
+    const waitButtonPress = new Promise( (f,r) => button.once('press', f) );
+    const waitTenSeconds  = new Promise( (f,r) => setTimeout(r, 3000)     );
+    Promise.race([waitButtonPress, waitTenSeconds])
+        .then(()=>{
+            userApprovalCallback(true);
+        })
+        .catch(()=>{
+            userApprovalCallback(false);
+        });
+};
+
 const rawMessageProcessorFactory = function (u2fCore) {
 
-    const rawMessageProcessor = function (apduCommand) {
+    const rawMessageProcessor = function (apduCommand, respHandler) {
         console.log('apduCommand =', apduCommand.toString('hex'));
 
         let [cla, ins, p1, p2, lc1, lc2, lc3, ...data] = apduCommand;
@@ -19,7 +39,7 @@ const rawMessageProcessorFactory = function (u2fCore) {
 
         if (ins === U2F_REGISTER) {
             if (data.length !== 64) {
-                return Buffer.from([0x69, 0x84]);
+                respHandler(Buffer.from([0x69, 0x84]));
             }
 
             const cp = data.slice(0, 32);
@@ -28,18 +48,36 @@ const rawMessageProcessorFactory = function (u2fCore) {
             const pk = u2fCore.compute_public_key(ap, kh);
             const cert = u2fcrypto.x509Encode(pk);
             const msg = Buffer.concat([Buffer.from([0x00]), ap, cp, kh, pk]);
-            const sig = u2fCore.sign(ap, kh, msg);
-            console.log('Generating new key handle...');
-            return Buffer.concat([
-                Buffer.from([0x05]),
-                pk,
-                Buffer.from([kh.length]),
-                kh,
-                cert,
-                sig,
-                Buffer.from([0x90, 0x00])
-            ]);
 
+            console.log();
+            console.log('Generating a new key pair for registration...');
+            //
+            // await the unlocking procedure for 10 seconds
+            //
+            //      unlock => do sign
+            //      timeout => report no user presence
+            //
+            waitUserApproval((approved) => {
+                if (approved) {
+                    console.log('Generating a new key pair for registration... DONE');
+                    console.log('Please go back to your browser window in 3 seconds');
+                    setTimeout(()=>{
+                        const sig = u2fCore.sign(ap, kh, msg);
+                        respHandler(Buffer.concat([
+                            Buffer.from([0x05]),
+                            pk,
+                            Buffer.from([kh.length]),
+                            kh,
+                            cert,
+                            sig,
+                            Buffer.from([0x90, 0x00])
+                        ]));
+                    }, 3000);
+                } else {
+                    respHandler(null, true);
+                    console.log('Generating a new key pair for registration... TIMEOUT!!');
+                }
+            });
         } else if (ins === U2F_AUTHENTICATE && p1 === 7) {
 
             const cp = data.slice(0, 32);
@@ -48,10 +86,11 @@ const rawMessageProcessorFactory = function (u2fCore) {
             const ok = u2fCore.is_good_key_handle(ap, kh);
             if (!ok) {
                 console.log('Checking key handle -> bad key handle');
-                return Buffer.from([0x69, 0x84]);
+                respHandler(Buffer.from([0x69, 0x84]));
+            } else {
+                console.log('Checking key handle -> good key handle');
+                respHandler(Buffer.from([0x69, 0x85]));
             }
-            console.log('Checking key handle -> good key handle');
-            return Buffer.from([0x69, 0x85]);
 
         } else if (ins === U2F_AUTHENTICATE && p1 === 3) {
 
@@ -61,19 +100,35 @@ const rawMessageProcessorFactory = function (u2fCore) {
             const ok = u2fCore.is_good_key_handle(ap, kh);
             if (!ok) {
                 console.log('Checking key handle -> bad key handle');
-                return Buffer.from([0x69, 0x84]);
+                respHandler(Buffer.from([0x69, 0x84]));
             }
             const counterBytes = u2fCore.get_incr_auth_counter();
             const msg = Buffer.concat([ap, Buffer.from([0x01]), counterBytes, cp]);
-            const sig = u2fCore.sign(ap, kh, msg);
+
+            console.log();
             console.log('Generating identity assertion...');
-            return Buffer.concat([Buffer.from([0x01]), counterBytes, sig, Buffer.from([0x90, 0x00])]);
+            //
+            // await the unlocking procedure for 10 seconds
+            //
+            //      unlock => do sign
+            //      timeout => report no user presence
+            //
+            waitUserApproval((approved) => {
+                if (approved) {
+                    const sig = u2fCore.sign(ap, kh, msg);
+                    respHandler(Buffer.concat([Buffer.from([0x01]), counterBytes, sig, Buffer.from([0x90, 0x00])]));
+                    console.log('Generating identity assertion... DONE');
+                } else {
+                    respHandler(null, true);
+                    console.log('Generating identity assertion... TIMEOUT!!');
+                }
+            });
 
         } else if (ins === U2F_VERSION) {
             console.log('Reporting version number...');
-            return Buffer.concat([Buffer.from('U2F_V2'), Buffer.from([0x90, 0x00])]);
+            respHandler(Buffer.concat([Buffer.from('U2F_V2'), Buffer.from([0x90, 0x00])]));
         } else {
-            return Buffer.from([0x6d, 0x00]);
+            respHandler(Buffer.from([0x6d, 0x00]));
         }
     };
 

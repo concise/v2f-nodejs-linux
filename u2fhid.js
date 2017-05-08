@@ -55,61 +55,99 @@ const outputReportProcessorFactory = function (rawMessageProcessor) {
     let _bcnt = 0;
     let _data = Buffer.alloc(0);
 
-    const outputReportProcessor = function (outputReport) {
+    const outputReportProcessor = function (outputReport, inputReportsHandler) {
         assert(outputReport.length === 64);
         if (outputReport[4] >> 7) {
-            return _process_request_initialization_packet(outputReport);
+            console.log('get an initialization packet');
+            _process_request_initialization_packet(outputReport, inputReportsHandler);
         } else {
-            return _process_request_continuation_packet(outputReport);
+            console.log('get a continuation packet');
+            _process_request_continuation_packet(outputReport, inputReportsHandler);
         }
     };
 
-    const _process_request_initialization_packet = function (octets) {
+    const _process_request_initialization_packet = function (octets, inputReportsHandler) {
         const pkt = parseInitializationPacket(octets);
+
+        if (_cid && pkt.cid != _cid) {
+            console.log('.. reject the packet');
+            inputReportsHandler(responseMessageToResponsePackets(pkt.cid, U2FHID_ERROR, Buffer.from([0x06]))); // immediately respond a BUSY
+            return;
+        }
+
         if (pkt.bcnt <= 57) {
-            return backend(pkt.cid, pkt.cmd, pkt.data.slice(0, pkt.bcnt));
+            backend(pkt.cid, pkt.cmd, pkt.data.slice(0, pkt.bcnt), inputReportsHandler);
         } else if (pkt.bcnt <= 7609) {
             _cid = pkt.cid;
             _cmd = pkt.cmd;
             _bcnt = pkt.bcnt;
             _data = pkt.data;
-            return [];
         } else {
             assert(false);
         }
     };
 
-    const _process_request_continuation_packet = function (octets) {
+    const _process_request_continuation_packet = function (octets, inputReportsHandler) {
         const pkt = parseContinuationPacket(octets);
-        if (pkt.cid !== _cid) {
-            return [];  // XXX should not happen
+
+        if (_cid && pkt.cid !== _cid) {
+            console.log('.. reject the packet');
+            inputReportsHandler(responseMessageToResponsePackets(pkt.cid, U2FHID_ERROR, Buffer.from([0x06]))); // immediately respond a BUSY
+            return;
         }
+
         _data = Buffer.concat([_data, pkt.data]);
-        if (_data.length < _bcnt) {
-            return [];
-        } else {
-            return backend(_cid, _cmd, _data.slice(0, _bcnt));
+        if (_data.length >= _bcnt) {
+            backend(_cid, _cmd, _data.slice(0, _bcnt), inputReportsHandler);
         }
     };
 
-    const backend = function (cid, cmd, data) {
-        if (cid === 0xffffffff && cmd === U2FHID_INIT && data.length === 8) {
-            console.log('Got INIT U2FHID request message');
-            return responseMessageToResponsePackets(0xffffffff, U2FHID_INIT,
-                Buffer.concat([
-                    data, crypto.randomBytes(4), Buffer.from('0200000000', 'hex')
-                ]));
+    const backend = function (cid, cmd, data, inputReportsHandler) {
+
+        console.log(`ENTER backend() with cid=${cid} cmd=${cmd} data=${data.toString('hex')}`);
+
+        if (cmd !== U2FHID_INIT && cmd !== U2FHID_PING && cmd !== U2FHID_MSG) {
+            console.log(`Got an unknow request message CMD=${cmd}`);
+            inputReportsHandler(responseMessageToResponsePackets(_cid, U2FHID_ERROR, Buffer.from([0x06]))); // unknown command error
+            return;
         }
+
+        if (cmd === U2FHID_INIT && data.length === 8) {
+            console.log('Got INIT U2FHID request message');
+            _cid = 0;
+            inputReportsHandler(
+                responseMessageToResponsePackets(
+                    cid,
+                    U2FHID_INIT,
+                    Buffer.concat([
+                        data,
+                        ((cid === 0xffffffff) ? crypto.randomBytes(4) : Buffer.from([cid >> 24, cid >> 16 & 0xff, cid >> 8 & 0xff, cid & 0xff])),
+                        Buffer.from('0200000000', 'hex')
+                    ])
+                )
+            );
+            return;
+        }
+
         if (cmd === U2FHID_PING) {
             console.log('Got PING U2FHID request message');
-            return responseMessageToResponsePackets(cid, cmd, data);
+            _cid = 0;
+            inputReportsHandler(responseMessageToResponsePackets(cid, cmd, data));
+            return;
         }
+
         if (cmd === U2FHID_MSG) {
             console.log('Got MSG U2FHID request message');
-            const resp = rawMessageProcessor(data);
-            return responseMessageToResponsePackets(cid, cmd, resp);
+            rawMessageProcessor(data, (resp, timeouterror)=>{
+                _cid = 0;
+                if (timeouterror) {
+                    inputReportsHandler(responseMessageToResponsePackets(cid, U2FHID_ERROR, Buffer.from([0x05]))); // TIMEOUT
+                } else {
+                    inputReportsHandler(responseMessageToResponsePackets(cid, cmd, resp));
+                }
+            });
+            return;
         }
-        return [];
     };
 
     return outputReportProcessor;
