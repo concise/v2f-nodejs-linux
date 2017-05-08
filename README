@@ -12,17 +12,32 @@ Install Node.js v6 to somewhere in your PATH
 
     wget https://nodejs.org/dist/v6.10.3/node-v6.10.3-linux-x64.tar.xz
     tar xf node-v6.10.3-linux-x64.tar.xz -C /var/tmp
+
+    PATH=/var/tmp/node-v6.10.3-linux-x64/bin:$PATH
     echo 'PATH=/var/tmp/node-v6.10.3-linux-x64/bin:$PATH' >> ~/.bashrc
+
+Get the code
+
+    git clone https://github.com/concise/v2f-nodejs-linux -b button
+    cd v2f-nodejs-linux
 
 Run the patch-linux-permission script as root
 
     sudo bash patch-linux-permission
 
-Run main.js
+------------------------------------------------------------------------------
 
-    node main.js
-
-Launch Google Chrome and test the virtual U2F security key
+Launch Google Chrome and test U2F
 
     https://demo.yubico.com/u2f
     https://myaccount.google.com/security
+
+------------------------------------------------------------------------------
+
+When you want to "insert" the security key
+
+    node main.js
+
+When you want to "press" the button
+
+    curl http://localhost:7890/
