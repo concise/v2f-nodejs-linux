@@ -16,10 +16,11 @@ Install Node.js v6 to somewhere in your PATH
     PATH=/var/tmp/node-v6.10.3-linux-x64/bin:$PATH
     echo 'PATH=/var/tmp/node-v6.10.3-linux-x64/bin:$PATH' >> ~/.bashrc
 
-Get the code
+Get the code (branch: "button")
 
-    git clone https://github.com/concise/v2f-nodejs-linux -b button
+    git clone https://github.com/concise/v2f-nodejs-linux
     cd v2f-nodejs-linux
+    git checkout button
 
 Run the patch-linux-permission script as root
 
