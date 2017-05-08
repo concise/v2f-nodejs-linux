@@ -33,7 +33,6 @@ Run the patch-linux-permission script as root (you only need to do this once)
 Launch Google Chrome and test U2F
 
     https://demo.yubico.com/u2f
-    https://myaccount.google.com/security
 
 ------------------------------------------------------------------------------
 
