@@ -58,17 +58,11 @@ const waitTenSecondsForApproval = async (apprvReqId) => {
 
 
 // -> either true or false
-const getApprovalBit = async () => {
+const getUserApprovalBit = async () => {
     const id = await createApprovalRequest(USERNAME, PASSWORD);
     const result = await waitTenSecondsForApproval(id);
     return result === 'ACCEPTED';
 };
 
 
-// the provided callback will be called with one boolean argument
-const waitUserApproval = (userApprovalCallback) => {
-    getApprovalBit().then(userApprovalCallback);
-};
-
-
-module.exports = waitUserApproval;
+module.exports = getUserApprovalBit;

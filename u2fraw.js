@@ -1,4 +1,4 @@
-const waitUserApproval = require('./button');
+const getUserApprovalBit = require('./button');
 const u2fcrypto = require('./u2fcrypto');
 
 const U2F_REGISTER                  = 0x01;
@@ -38,7 +38,8 @@ const rawMessageProcessorFactory = function (u2fCore) {
             //      unlock => do sign
             //      timeout => report no user presence
             //
-            waitUserApproval((approved) => {
+            getUserApprovalBit()
+            .then((approved) => {
                 if (approved) {
                     console.log('Generating a new key pair for registration... DONE');
                     console.log();
@@ -97,7 +98,8 @@ const rawMessageProcessorFactory = function (u2fCore) {
             //      unlock => do sign
             //      timeout => report no user presence
             //
-            waitUserApproval((approved) => {
+            getUserApprovalBit()
+            .then((approved) => {
                 if (approved) {
                     const sig = u2fCore.sign(ap, kh, msg);
                     respHandler(Buffer.concat([Buffer.from([0x01]), counterBytes, sig, Buffer.from([0x90, 0x00])]));

@@ -6,7 +6,13 @@ const http = require('http');
 
 const ee = new EventEmitter();
 
-const waitUserApproval = (userApprovalCallback) => {
+http.createServer((req, res) => {
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.end('OK\r\n');
+    ee.emit('press');
+}).listen(BUTTON_PORT, BUTTON_ADDR);
+
+const getUserApprovalBit = (userApprovalCallback) => {
     console.log();
     console.log('To approve the U2F request please GET the URL:');
     console.log();
@@ -23,10 +29,4 @@ const waitUserApproval = (userApprovalCallback) => {
         });
 };
 
-http.createServer((req, res) => {
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end('OK\r\n');
-    ee.emit('press');
-}).listen(BUTTON_PORT, BUTTON_ADDR);
-
-module.exports = waitUserApproval;
+module.exports = getUserApprovalBit;
