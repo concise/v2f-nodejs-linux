@@ -18,15 +18,9 @@ const getUserApprovalBit = (userApprovalCallback) => {
     console.log();
     console.log(`    http://${BUTTON_ADDR}:${BUTTON_PORT}/`);
     console.log();
-    const waitButtonPress = new Promise( (f,r) => ee.once('press', f)  );
-    const waitTenSeconds  = new Promise( (f,r) => setTimeout(r, 10000) );
-    Promise.race([waitButtonPress, waitTenSeconds])
-        .then(()=>{
-            userApprovalCallback(true);
-        })
-        .catch(()=>{
-            userApprovalCallback(false);
-        });
+    const waitButtonPress = new Promise(f => ee.once('press', () => f(true)));
+    const waitTenSeconds  = new Promise(f => setTimeout(f, 10000, false));
+    return Promise.race([waitButtonPress, waitTenSeconds])
 };
 
 module.exports = getUserApprovalBit;
