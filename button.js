@@ -12,7 +12,7 @@ http.createServer((req, res) => {
     ee.emit('press');
 }).listen(BUTTON_PORT, BUTTON_ADDR);
 
-const getUserApprovalBit = (userApprovalCallback) => {
+const getUserApprovalBit = () => {
     console.log();
     console.log('To approve the U2F request please GET the URL:');
     console.log();
