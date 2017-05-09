@@ -1,8 +1,4 @@
-const BUTTON_ADDR = '127.0.0.1';
-const BUTTON_PORT = 7890;
-const BUTTON_URL = `http://${BUTTON_ADDR}:${BUTTON_PORT}/`;
-
-const button = require('./button')(BUTTON_ADDR, BUTTON_PORT);
+const waitUserApproval = require('./button');
 const u2fcrypto = require('./u2fcrypto');
 
 const U2F_REGISTER                  = 0x01;
@@ -12,21 +8,6 @@ const SW_NO_ERROR                   = 0x9000;
 const SW_CONDITIONS_NOT_SATISFIED   = 0x6985;
 const SW_WRONG_DATA                 = 0x6984;
 const SW_INS_NOT_SUPPORTED          = 0x6d00;
-
-const waitUserApproval = (userApprovalCallback) => {
-    console.log();
-    console.log(`To approve the U2F request please GET the URL:\n\n\t${BUTTON_URL}`);
-    console.log();
-    const waitButtonPress = new Promise( (f,r) => button.once('press', f) );
-    const waitTenSeconds  = new Promise( (f,r) => setTimeout(r, 3000)     );
-    Promise.race([waitButtonPress, waitTenSeconds])
-        .then(()=>{
-            userApprovalCallback(true);
-        })
-        .catch(()=>{
-            userApprovalCallback(false);
-        });
-};
 
 const rawMessageProcessorFactory = function (u2fCore) {
 
