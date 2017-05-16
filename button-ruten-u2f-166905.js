@@ -21,7 +21,9 @@ const getUserApprovalBit = async () => {
 
     const id = await createApprovalRequest();
 
-    console.log('Somebody has to do `curl https://ruten-u2f-166905.appspot.com/api/action -F action=accept` in order to approve the U2F request');
+    console.log('Somebody has to do' +
+        ' `curl https://ruten-u2f-166905.appspot.com/api/action' +
+        ' -F action=accept` in order to approve the U2F request');
 
     let expired = false;
 
@@ -31,12 +33,11 @@ const getUserApprovalBit = async () => {
 
     while (true) {
         const [_, state] = await Promise.all([
-            wait(1000), getApprovalRequestState(id)
-        ]);
+            wait(1000), getApprovalRequestState(id) ]);
         if (state === 'accept')
-            return true;  // curl https://ruten-u2f-166905.appspot.com/api/action -F action=accept
+            return true;
         if (state === 'reject')
-            return false;  // curl https://ruten-u2f-166905.appspot.com/api/action -F action=reject
+            return false;
         if (state !== 'waiting')
             throw RangeError('Unexpected HTTP response: "' + state + '"');
         if (expired)
