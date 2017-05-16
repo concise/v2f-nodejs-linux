@@ -21,6 +21,8 @@ const getUserApprovalBit = async () => {
 
     const id = await createApprovalRequest();
 
+    console.log('Somebody has to do `curl https://ruten-u2f-166905.appspot.com/api/action -F action=accept` in order to approve the U2F request');
+
     let expired = false;
 
     setTimeout(() => {
