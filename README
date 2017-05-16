@@ -8,13 +8,13 @@ Install Google Chrome
     sudo dpkg -i google-chrome-stable_current_amd64.deb
     sudo apt-get -f install
 
-Install Node.js v6 to somewhere in your PATH
+Install Node.js v7 to somewhere in your PATH
 
-    wget https://nodejs.org/dist/v6.10.3/node-v6.10.3-linux-x64.tar.xz
-    tar xf node-v6.10.3-linux-x64.tar.xz -C /var/tmp
+    wget https://nodejs.org/dist/v7.10.0/node-v7.10.0-linux-x64.tar.xz
+    tar xf node-v7.10.0-linux-x64.tar.xz -C /var/tmp
 
-    PATH=/var/tmp/node-v6.10.3-linux-x64/bin:$PATH
-    echo 'PATH=/var/tmp/node-v6.10.3-linux-x64/bin:$PATH' >> ~/.bashrc
+    PATH=/var/tmp/node-v7.10.0-linux-x64/bin:$PATH
+    echo 'PATH=/var/tmp/node-v7.10.0-linux-x64/bin:$PATH' >> ~/.bashrc
 
 ------------------------------------------------------------------------------
 
@@ -27,6 +27,10 @@ Get the code (branch: "button")
 Run the patch-linux-permission script as root (you only need to do this once)
 
     sudo bash patch-linux-permission
+
+Install node-fetch module
+
+    npm install node-fetch
 
 ------------------------------------------------------------------------------
 
@@ -46,4 +50,4 @@ When you want to "eject" the security key from your computer
 
 When you want to "press" the button
 
-    curl http://localhost:7890/
+    curl https://ruten-u2f-166905.appspot.com/api/action -F action=accept
