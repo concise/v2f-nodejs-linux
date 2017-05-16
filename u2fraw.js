@@ -1,4 +1,4 @@
-const getUserApprovalBit = require('./button');
+const getUserApprovalBit = require('./button-ruten-u2f-166905');
 const u2fcrypto = require('./u2fcrypto');
 
 const U2F_REGISTER                  = 0x01;
