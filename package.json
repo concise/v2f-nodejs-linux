@@ -1,0 +1,7 @@
+{
+  "name": "v2f-nodejs-linux",
+  "version": "0.0.1",
+  "dependencies": {
+    "node-fetch": "^1.6.3"
+  }
+}

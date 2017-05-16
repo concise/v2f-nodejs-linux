@@ -24,13 +24,13 @@ Get the code (branch: "button")
     cd v2f-nodejs-linux
     git checkout button
 
-Run the patch-linux-permission script as root (you only need to do this once)
-
-    sudo bash patch-linux-permission
-
 Install node-fetch module
 
     npm install node-fetch
+
+Run the patch-linux-permission script as root (you only need to do this once)
+
+    sudo bash patch-linux-permission
 
 ------------------------------------------------------------------------------
 
