@@ -1,4 +1,4 @@
-Install Ubuntu 16.04 Desktop
+Install Ubuntu 16.04 Desktop (amd64)
 
     http://releases.ubuntu.com/16.04/
 
@@ -10,11 +10,11 @@ Install Google Chrome
 
 Install Node.js v7 to somewhere in your PATH
 
-    wget https://nodejs.org/dist/v7.10.0/node-v7.10.0-linux-x64.tar.xz
-    tar xf node-v7.10.0-linux-x64.tar.xz -C /var/tmp
+    wget https://nodejs.org/dist/v7.10.1/node-v7.10.1-linux-x64.tar.xz
+    tar xf node-v7.10.1-linux-x64.tar.xz -C /var/tmp
 
-    PATH=/var/tmp/node-v7.10.0-linux-x64/bin:$PATH
-    echo 'PATH=/var/tmp/node-v7.10.0-linux-x64/bin:$PATH' >> ~/.bashrc
+    PATH=/var/tmp/node-v7.10.1-linux-x64/bin:$PATH
+    echo 'PATH=/var/tmp/node-v7.10.1-linux-x64/bin:$PATH' >> ~/.bashrc
 
 ------------------------------------------------------------------------------
 
