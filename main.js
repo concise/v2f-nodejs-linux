@@ -1,9 +1,14 @@
 #!/usr/bin/env node
 
+const V2FAPPRID = process.env.V2FAPPRID;
+if (!V2FAPPRID) throw Error('envar V2FAPPRID not defined');
+console.log(`V2FAPPRID = ${V2FAPPRID}`);
+
 const V2FPATH =
     process.env.V2FPATH ? process.env.V2FPATH :
     process.argv.length > 2 ? process.argv[2] :
     process.env.HOME + '/.v2f';
+console.log(`V2FPATH = ${V2FPATH}`);
 
 const u2fCoreFactory = require('./u2fcore');
 const u2fCore = u2fCoreFactory(V2FPATH);

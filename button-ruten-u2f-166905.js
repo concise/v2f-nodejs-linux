@@ -1,7 +1,40 @@
+/*
+
+Old RPC API:
+    createUserApprovalRequest   : ()                        -> (reqId)
+    getUserApprovalRequestState : (reqId)                   -> (state)  OR ERR
+    userPerformAction           : (action)                  -> ()       OR ERR
+    userPerformAction           : (action, reqId)           -> ()       OR ERR
+
+New RPC API:
+    createUserApprovalRequest   : (apprId)                  -> (reqId)
+    getUserApprovalRequestState : (apprId, reqId)           -> (state)  OR ERR
+    userPerformAction           : (apprId, action)          -> ()       OR ERR
+    userPerformAction           : (apprId, action, reqId)   -> ()       OR ERR
+
+------------------------------------------------------------------------------
+
+Old RPC Server Implementation:
+
+    POST /api/login                                             -> {reqId}
+    POST /api/req/{reqId}                                       -> {state}
+    POST /api/action         with body action={action}          -> ()
+    POST /api/action/{reqId} with body action={action}          -> ()
+
+New RPC Server Implementation:
+
+    POST /api/login/{apprId}                                    -> {reqId}
+    POST /api/req/{apprId}/{reqId}                              -> {state}
+    POST /api/action/{apprId}         with body action={action} -> ()
+    POST /api/action/{apprId}/{reqId} with body action={action} -> ()
+
+*/
+
 const fetch = require('node-fetch');
 
-const URL_A = 'https://ruten-u2f-166905.appspot.com/api/login';
-const URL_B = 'https://ruten-u2f-166905.appspot.com/api/req/';
+const apprId = process.env.V2FAPPRID;
+const URL_A = `https://ruten-u2f-166905.appspot.com/api/login/${apprId}`;
+const URL_B = `https://ruten-u2f-166905.appspot.com/api/req/${apprId}/`;
 
 const wait = (ms, val) => new Promise(f => setTimeout(f, ms, val));
 
@@ -20,10 +53,6 @@ const getUserApprovalRequestState = (id) => (
 const getUserApprovalBit = async () => {
 
     const id = await createUserApprovalRequest();
-
-    console.log('Somebody has to do' +
-        ' `curl https://ruten-u2f-166905.appspot.com/api/action' +
-        ' -F action=accept` in order to approve the U2F request');
 
     let expired = false;
 
