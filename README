@@ -40,14 +40,19 @@ Launch Google Chrome and test U2F
 
 ------------------------------------------------------------------------------
 
+Specify your approver id as an environment variable
+
+    export V2FAPPRID=testuser
+
 When you want to "insert" the security key into your computer
 
     node main.js
 
 When you want to "eject" the security key from your computer
 
-    just send SIGINT (^C) or SIGTERM to stop the program
+    send SIGINT (^C) or SIGTERM to stop the program
 
 When you want to "press" the button
 
-    curl https://ruten-u2f-166905.appspot.com/api/action -F action=accept
+    curl http://13.228.30.144:8080/api/action/$V2FAPPRID -F action=accept
+    curl http://13.228.30.144:8080/api/action/$V2FAPPRID -F action=reject
