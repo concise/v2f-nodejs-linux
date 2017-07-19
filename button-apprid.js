@@ -7,27 +7,32 @@ curl http://13.228.30.144:8080/api/login/js -X POST
 curl http://13.228.30.144:8080/api/req/js
 
 3. accept or reject
-curl http://13.228.30.144:8080/api/action/js -X POST -F action=accept
-curl http://13.228.30.144:8080/api/action/js -X POST -F action=reject
+curl http://13.228.30.144:8080/api/action/js -F action=accept
+curl http://13.228.30.144:8080/api/action/js -F action=reject
 
 */
 
 const fetch = require('node-fetch');
 
-const apprId = process.env.V2FAPPRID;
-const URL_A = `http://13.228.30.144:8080/api/login/${apprId}`;
-const URL_B = `http://13.228.30.144:8080/api/req/${apprId}`;
+const APPR_ID = process.env.V2FAPPRID;
+const API_BASE_URL = 'http://13.228.30.144:8080';
+
+if (!(typeof APPR_ID === 'string' && /^[a-zA-Z0-9._-]+$/.test(APPR_ID))) {
+    throw Error('the environment variable V2FAPPRID is not defined or invalid');
+}
 
 const wait = (ms, val) => new Promise(f => setTimeout(f, ms, val));
 
 const createUserApprovalRequest = () => (
-    fetch(URL_A, {method: 'post'})  // send POST request
+    // send POST request to initiate a new approval request
+    fetch(`${API_BASE_URL}/api/login/${APPR_ID}`, {method: 'post'})
         .then(s => s.text())        // parse the response as plain text
         .then(t => t.trimRight())   // remove trailing new line character
 );
 
 const getUserApprovalRequestState = (id) => (
-    fetch(URL_B)                    // send GET request
+    // send GET request to poll the current status
+    fetch(`${API_BASE_URL}/api/req/${APPR_ID}`)
         .then(s => s.text())        // parse the response as plain text
         .then(t => t.trimRight())   // remove trailing new line character
 );
