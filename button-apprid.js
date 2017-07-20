@@ -45,7 +45,7 @@ const getUserApprovalBit = async () => {
 
     setTimeout(() => {
         expired = true;
-    }, 10000);
+    }, 60000);
 
     while (true) {
         const [_, state] = await Promise.all([
